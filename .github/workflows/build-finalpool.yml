@@ -1,0 +1,120 @@
+name: Build finalpool
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: finalpool
+          fetch-depth: 0
+      - name: Copy implemented tasks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          SPECS=(
+          lueyang-dev lueyang activity-logger
+          yuzhen-dev yuzhen alert-system
+          yuxuan-dev yuxuan asset-optimizer
+          xiaochen_dev xiaochen backup-utility
+          gyy gyy blog-engine
+          junteng_dev junteng booking-system
+          wenshuo-dev wenshuo image-processor
+          junteng_dev junteng calendar-sync
+          ruige ruige canvas-automation
+          yuzhen-dev yuzhen invoice-generator
+          jl_dev jl canvas-grade-automation
+          lv lv chat-bot
+          zhaochen zhaochen load-balancer
+          gyy gyy cms-builder
+          junteng_dev junteng contact-manager
+          xiaochen_dev xiaochen monitoring-agent
+          yuxuan-dev yuxuan content-manager
+          gyy gyy content-scheduler
+          fan-dev fan coupon-manager
+          lueyang-dev lueyang crm-system
+          lv lv voice-processor
+          ruige ruige data-analytics
+          haoze haoze video-trimmer
+          yuzhen-dev yuzhen data-validator
+          lueyang-dev lueyang deal-manager
+          junxian_dev junxian translation-api
+          xiaochen_dev xiaochen deployment-tool
+          lueyang-dev lueyang email-campaign
+          zhaochen zhaochen template-engine
+          jl_dev jl email-classification-system
+          yuxuan-dev yuxuan task-scheduler
+          xiaochen_dev xiaochen error-tracker
+          haoze haoze subtitle-generator
+          ruige ruige expense-tracker
+          gyy gyy social-publisher
+          lv lv feedback-collector
+          ruige ruige file-manager
+          junteng_dev junteng shipment-tracker
+          lueyang-dev lueyang follow-up-reminder
+          yuzhen-dev yuzhen form-builder
+          lv lv sentiment-analyzer
+          xiaochen_dev xiaochen security-scanner
+          wenshuo-dev wenshuo search-engine
+          lueyang-dev lueyang sales-pipeline
+          junteng_dev junteng reminder-service
+          junxian_dev junxian qr-generator
+          junteng_dev junteng product-catalog
+          fan-dev fan price-tracker
+          lv lv personalization-service
+          yuzhen-dev yuzhen permission-manager
+          jl_dev jl pdf-report-generator
+          yuzhen-dev yuzhen payment-processor
+          junteng_dev junteng order-processor
+          yuxuan-dev yuxuan network-analyzer
+          fan-dev fan loyalty-program
+          fan-dev fan discount-calculator
+          gyy gyy tag-manager
+          gyy gyy sitemap-generator
+          gyy gyy robots-handler
+          haoze haoze media-organizer
+          haoze haoze streaming-service
+          jl_dev jl customer-feedback-processor
+          jl_dev jl inventory-management
+          junteng_dev junteng customer-portal
+          junteng_dev junteng help-desk
+          junxian_dev junxian social-connector
+          lueyang-dev lueyang territory-manager
+          lueyang-dev lueyang client-portal
+          lv lv survey-builder
+          lv lv analytics-dashboard
+          ruige ruige web-crawler
+          ruige ruige log-analyzer
+          wenshuo-dev wenshuo cache-optimizer
+          wenshuo-dev wenshuo scheduler
+          xiaochen_dev xiaochen status-checker
+          xiaochen_dev xiaochen health-monitor
+          yuxuan-dev yuxuan sync-service
+          zhaochen zhaochen certificate-manager
+          zhaochen zhaochen storage-manager
+          )
+          mkdir -p tasks/finalpool
+          for spec in "${SPECS[@]}"; do
+            read -r branch dev task <<< "$spec"
+            dest="tasks/finalpool/$task"
+            if [ -e "$dest" ]; then
+              echo "Duplicate destination: $dest" >&2
+              exit 1
+            fi
+            tmp="$(mktemp -d)"
+            git archive "origin/$branch" "tasks/$dev/$task" | tar -x -C "$tmp"
+            cp -a "$tmp/tasks/$dev/$task" "$dest"
+            rm -rf "$tmp"
+          done
+          test "$(find tasks/finalpool -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 79
+          test "$(find tasks/finalpool -type f | wc -l)" -eq 397
+          git rm -f .github/workflows/build-finalpool.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tasks/finalpool
+          git commit -m "Add implemented tasks to finalpool"
+          git push origin HEAD:finalpool
